@@ -1,10 +1,10 @@
 import Redis from 'ioredis';
 
 class RedisClient {
-  private client: Redis.Redis;
+  private client: Redis;
 
-  constructor() {
-    this.client = new Redis();
+  constructor(redisInstance?: Redis) {
+    this.client = redisInstance || new Redis();
   }
 
   async setValue(key: string, value: string) {
