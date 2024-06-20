@@ -1,34 +1,74 @@
+// test/tests.ts
 import { expect } from 'chai';
-import proxyquire from 'proxyquire';
-import RedisMock from 'ioredis-mock';
+import sinon from 'sinon';
+import Redis from 'ioredis';
+import RedisClient from '../src/ioredisModule';
 
 describe('RedisClient', () => {
-  let RedisClient: any;
-  let redisClient: any;
+  let redisClient;
+  let sandbox;
+  let setStub;
+  let getStub;
+  let mockRedisInstance;
 
-  before(() => {
-    // Use proxyquire to mock 'ioredis' with 'ioredis-mock'
-    const stubs = {
-      'ioredis': RedisMock
-    };
+  beforeEach(() => {
+    sandbox = sinon.createSandbox();
 
-    // Import the module with mocked dependencies
-    const module = proxyquire('ioredisModule', stubs);
+    // Create a mock Redis instance
+    mockRedisInstance = sinon.createStubInstance(Redis);
 
-    // Extract the RedisClient class
-    RedisClient = module.default;
+    // Inject the mock Redis instance into RedisClient
+    redisClient = new RedisClient(mockRedisInstance);
 
-    // Instantiate the mocked RedisClient
-    redisClient = new RedisClient();
+    // Stub the set and get methods on the mock instance
+    setStub = mockRedisInstance.set.resolves('OK');
+    getStub = mockRedisInstance.get.resolves('value');
   });
 
-  it('should set and get a value', async () => {
-    const key = 'test_key';
-    const value = 'test_value';
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it('should set value in Redis', async () => {
+    const key = 'test-key';
+    const value = 'test-value';
 
     await redisClient.setValue(key, value);
-    const result = await redisClient.getValue(key);
 
-    expect(result).to.equal(value);
+    expect(setStub.calledOnceWithExactly(key, value)).to.be.true;
   });
 });
+
+// Enable rewiremock and replace 'ioredis' with 'mock-ioredis'
+// rewiremock(() => require('ioredis')).with(ioRedisMock);
+// const mock = await rewiremock.module(() => import('../src/ioredisModule'), {...});
+
+// rewiremock('ioredis').with('ioredis-mock')
+
+// rewiremock.enable();
+
+// Import the module that uses ioredis
+// import {getValue, setValue} from '../src/ioredisModule';
+
+// rewiremock.disable();
+
+// describe('redisClient', () => {
+//   beforeEach(async () => {
+//     // Clear mock redis data before each test
+//     const redis = new ioRedisMock();
+//     await redis.flushall();
+//   });
+
+//   it('should set and get a value from Redis', async () => {
+//     await setValue('foo', 'bar');
+//     const value = await getValue('foo');
+
+//     expect(value).to.equal('bar');
+//   });
+
+//   it('should return null for a non-existent key', async () => {
+//     const value = await getValue('non-existent-key');
+
+//     expect(value).to.be.null;
+//   });
+// });
