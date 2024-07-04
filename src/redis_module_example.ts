@@ -8,7 +8,7 @@ async function testRedis() {
   console.log("get result: " + getResult);
 }
 
-// Try this file with tsx redis_module_example.ts
+// Try this file with tsx ./src/redis_module_example.ts
 
 async function main() {
   await testRedis();

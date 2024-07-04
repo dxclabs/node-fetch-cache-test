@@ -55,7 +55,7 @@ async function testCache(
   console.timeEnd("Fetch Time"); // End timing and print the duration
 }
 
-// Try this file with tsx cache_times.ts
+// Try this file with tsx ./src/cache_times.ts
 
 async function main() {
   const headers = { "Cache-Control": "only-if-cached" };
@@ -89,23 +89,31 @@ async function main() {
   await fetchDataMemory(headers);
 
   console.log("\nCache in Memory, Default Cache");
+  console.log("Fetch 1");
   await fetchDataMemoryDefault();
+  console.log("Fetch 2");
   await fetchDataMemoryDefault();
 
   console.log("\nCache in Memory, Default Cache, Cache Control");
+  console.log("Fetch 1");
   await fetchDataMemoryDefault(headers);
   await delay(100);
   console.log("\nA Few Moments Later");
+  console.log("Fetch 2");
   await fetchDataMemoryDefault(headers);
 
   console.log("\nCache to Disk, Custom Cache with TTL");
+  console.log("Fetch 1");
   await fetchDataFileCache();
+  console.log("Fetch 2");
   await fetchDataFileCache();
 
   console.log("\nCache to Disk, Custom Cache with TTL, Cache Control");
+  console.log("Fetch 1");
   await fetchDataFileCache(headers);
   await delay(200);
   console.log("\nA Few Moments Later");
+  console.log("Fetch 2");
   await fetchDataFileCache(headers);
 }
 
