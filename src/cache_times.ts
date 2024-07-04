@@ -9,35 +9,6 @@ function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function fetchDataRedis(headers: { [key: string]: string } = {}) {
-  const fetch = NodeFetchCache.create({
-    cache: new RedisCache({ host: "127.0.0.1", port: 6379, db: 0, ttl: 100 }),
-    // cache: new RedisCache({path: "localhost:6379", ttl: 60000})
-    // cache: new RedisCache({ttl: 60000})
-  });
-
-  return await testCache(fetch, headers);
-}
-
-async function fetchDataMemory(headers: { [key: string]: string } = {}) {
-  const fetch = NodeFetchCache.create({
-    cache: new MemoryCache({ ttl: 100 }),
-  });
-
-  return await testCache(fetch, headers);
-}
-
-async function fetchDataMemoryDefault(headers: { [key: string]: string } = {}) {
-  return await testCache(fetch, headers);
-}
-
-async function fetchDataFileCache(headers: { [key: string]: string } = {}) {
-  const fetch = NodeFetchCache.create({
-    cache: new FileSystemCache({ ttl: 100 }),
-  });
-
-  return await testCache(fetch, headers);
-}
 
 async function testCache(
   fetch: typeof NodeFetchCache,
@@ -60,61 +31,75 @@ async function testCache(
 async function main() {
   const headers = { "Cache-Control": "only-if-cached" };
 
+  const redisCacheFetch = NodeFetchCache.create({
+    cache: new RedisCache({ host: "127.0.0.1", port: 6379, db: 0, ttl: 100 }),
+    // cache: new RedisCache({path: "localhost:6379", ttl: 60000})
+    // cache: new RedisCache({ttl: 60000})
+  });
+
   console.log("Cache with Redis, Custom Cache with TTL");
   console.log("Fetch 1");
-  await fetchDataRedis();
-  console.log("Fetch 2");
-  await fetchDataRedis();
+  await testCache(redisCacheFetch);
+  console.log("\nFetch 2");
+  await testCache(redisCacheFetch);
 
   console.log("\nCache with Redis, Custom Cache with TTL, Cache Control");
   console.log("Fetch 1");
-  await fetchDataRedis(headers);
+  await testCache(redisCacheFetch, headers);
   await delay(200);
   console.log("\nA Few Moments Later");
   console.log("Fetch 2");
-  await fetchDataRedis(headers);
+  await testCache(redisCacheFetch, headers);
+
+  const memoryCacheFetch = NodeFetchCache.create({
+    cache: new MemoryCache({ ttl: 100 }),
+  });
 
   console.log("\nCache in Memory, Custom Cache with TTL");
   console.log("Fetch 1");
-  await fetchDataMemory();
-  console.log("Fetch 2");
-  await fetchDataMemory();
+  await testCache(memoryCacheFetch);
+  console.log("\nFetch 2");
+  await testCache(memoryCacheFetch);
 
   console.log("\nCache in Memory, Custom Cache with TTL, Cache Control");
   console.log("Fetch 1");
-  await fetchDataMemory(headers);
+  await testCache(memoryCacheFetch, headers);
   await delay(100);
   console.log("\nA Few Moments Later");
   console.log("Fetch 2");
-  await fetchDataMemory(headers);
+  await testCache(memoryCacheFetch, headers);
 
   console.log("\nCache in Memory, Default Cache");
   console.log("Fetch 1");
-  await fetchDataMemoryDefault();
-  console.log("Fetch 2");
-  await fetchDataMemoryDefault();
+  await testCache(fetch);
+  console.log("\nFetch 2");
+  await testCache(fetch);
 
   console.log("\nCache in Memory, Default Cache, Cache Control");
   console.log("Fetch 1");
-  await fetchDataMemoryDefault(headers);
+  await testCache(fetch, headers);
   await delay(100);
   console.log("\nA Few Moments Later");
   console.log("Fetch 2");
-  await fetchDataMemoryDefault(headers);
+  await testCache(fetch, headers);
+
+  const diskCacheFetch = NodeFetchCache.create({
+    cache: new FileSystemCache({ ttl: 100 }),
+  });
 
   console.log("\nCache to Disk, Custom Cache with TTL");
   console.log("Fetch 1");
-  await fetchDataFileCache();
-  console.log("Fetch 2");
-  await fetchDataFileCache();
+  await testCache(diskCacheFetch);
+  console.log("\nFetch 2");
+  await testCache(diskCacheFetch);
 
   console.log("\nCache to Disk, Custom Cache with TTL, Cache Control");
   console.log("Fetch 1");
-  await fetchDataFileCache(headers);
+  await testCache(diskCacheFetch, headers);
   await delay(200);
   console.log("\nA Few Moments Later");
   console.log("Fetch 2");
-  await fetchDataFileCache(headers);
+  await testCache(diskCacheFetch, headers);
 }
 
 main();
